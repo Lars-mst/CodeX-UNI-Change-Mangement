@@ -16,7 +16,7 @@ export default function LoginPage({ onLogin }) {
 
     if (username === guestCredentials.username && password === guestCredentials.password) {
       setError("");
-      onLogin({ name: "Gast", role: "Gastzugang" });
+      onLogin({ name: "Karin Müller", role: "Gastzugang" });
       return;
     }
 

@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import FilterTabs from "../components/FilterTabs.jsx";
 import HubCard from "../components/HubCard.jsx";
 import SectionHeader from "../components/SectionHeader.jsx";
+import { buildOfferSlotOptions } from "../data/calendar.js";
 import { healthCategories, healthOffers } from "../data/platform.js";
 
 export default function HealthPage() {
@@ -51,18 +52,25 @@ export default function HealthPage() {
         </div>
 
         <div className="mt-8 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-          {filteredOffers.map((offer) => (
-            <HubCard
-              key={offer.slug}
-              item={offer}
-              to={`/bewell/${offer.slug}`}
-              meta={offer.category}
-              cta="Termin buchen"
-            >
-              <p className="text-sm font-semibold text-ink">Freie Slots: {offer.slots.slice(0, 2).join(", ")}</p>
-              <p className="mt-1 text-xs text-slate-500">{offer.contact}</p>
-            </HubCard>
-          ))}
+          {filteredOffers.map((offer) => {
+            const visibleSlots = buildOfferSlotOptions(offer)
+              .slice(0, 2)
+              .map((slot) => slot.label)
+              .join(", ");
+
+            return (
+              <HubCard
+                key={offer.slug}
+                item={offer}
+                to={`/bewell/${offer.slug}`}
+                meta={offer.category}
+                cta="Termin buchen"
+              >
+                <p className="text-sm font-semibold text-ink">Freie Slots: {visibleSlots}</p>
+                <p className="mt-1 text-xs text-slate-500">{offer.contact}</p>
+              </HubCard>
+            );
+          })}
         </div>
       </section>
     </>

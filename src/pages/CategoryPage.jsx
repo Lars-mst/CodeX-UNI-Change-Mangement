@@ -1,5 +1,5 @@
 import { Link, useParams } from "react-router-dom";
-import { ArrowLeft, CheckCircle2, MapPin } from "lucide-react";
+import { ArrowLeft, CheckCircle2, ExternalLink, MapPin } from "lucide-react";
 import ButtonLink from "../components/ButtonLink.jsx";
 import { benefitOffers } from "../data/platform.js";
 
@@ -43,7 +43,15 @@ export default function CategoryPage() {
           <p className="mt-4 max-w-3xl text-lg leading-8 text-slate-600">{offer.description}</p>
           <p className="mt-4 max-w-3xl text-base leading-7 text-slate-600">{offer.details}</p>
           <div className="mt-7 flex flex-col gap-3 sm:flex-row">
-            <ButtonLink to="/profil">{offer.cta}</ButtonLink>
+            <a
+              href={offer.externalUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="focus-ring inline-flex items-center justify-center gap-2 rounded-lg bg-health-teal px-4 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-teal-700"
+            >
+              {offer.cta}
+              <ExternalLink size={16} />
+            </a>
             <ButtonLink to="/ermaessigungen" variant="light">Weitere Angebote</ButtonLink>
           </div>
         </div>
@@ -61,6 +69,9 @@ export default function CategoryPage() {
             </p>
             <p className="rounded-lg bg-white p-3 leading-6">
               Anbieter: <strong>{offer.provider}</strong>
+            </p>
+            <p className="rounded-lg bg-white p-3 leading-6">
+              Externer Link: <strong>{new URL(offer.externalUrl).hostname.replace("www.", "")}</strong>
             </p>
           </div>
         </aside>

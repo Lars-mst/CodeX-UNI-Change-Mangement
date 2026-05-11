@@ -19,13 +19,16 @@ export default function HubCard({
   cta = "Öffnen",
   favorite,
   onFavorite,
+  balanced = false,
   children
 }) {
   const Icon = item?.icon;
   const target = to ?? item?.to;
 
   return (
-    <article className="rounded-lg border border-slate-200 bg-white p-5 shadow-soft transition hover:border-teal-200">
+    <article className={`rounded-lg border border-slate-200 bg-white p-5 shadow-soft transition hover:border-teal-200 ${
+      balanced ? "flex h-full flex-col" : ""
+    }`}>
       <div className="flex items-start justify-between gap-4">
         {Icon ? (
           <span className={`grid h-11 w-11 place-items-center rounded-lg ${toneStyles[item.tone] ?? toneStyles.teal}`}>
@@ -46,13 +49,15 @@ export default function HubCard({
         ) : null}
       </div>
       {meta ? <p className="mt-4 text-xs font-bold uppercase tracking-[0.12em] text-health-teal">{meta}</p> : null}
-      <h3 className="mt-2 text-lg font-bold text-ink">{title ?? item?.title}</h3>
-      <p className="mt-2 text-sm leading-6 text-slate-600">{text ?? item?.text ?? item?.description}</p>
-      {children ? <div className="mt-4">{children}</div> : null}
+      <h3 className={`mt-2 text-lg font-bold text-ink ${balanced ? "min-h-[3.5rem]" : ""}`}>{title ?? item?.title}</h3>
+      <p className={`mt-2 text-sm leading-6 text-slate-600 ${balanced ? "min-h-[4.5rem]" : ""}`}>{text ?? item?.text ?? item?.description}</p>
+      {children ? <div className={balanced ? "mt-4 flex-1" : "mt-4"}>{children}</div> : null}
       {target ? (
         <Link
           to={target}
-          className="focus-ring mt-5 inline-flex items-center gap-2 rounded-lg text-sm font-bold text-health-teal hover:text-teal-700"
+          className={`focus-ring inline-flex items-center gap-2 rounded-lg text-sm font-bold text-health-teal hover:text-teal-700 ${
+            balanced ? "mt-auto pt-5" : "mt-5"
+          }`}
         >
           {cta ?? item?.cta}
           <ArrowRight size={16} />

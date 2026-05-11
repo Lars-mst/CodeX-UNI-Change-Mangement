@@ -11,13 +11,61 @@ import {
   Sparkles,
   X
 } from "lucide-react";
-import avatarImage from "../assets/ava-benefit-assistant.jpg";
+import avatarImage from "../assets/avaAvatar.js";
 import { assistantSuggestions, generateAssistantResponse } from "../data/assistant.js";
 
-const initialMessages = [
+const createInitialMessages = (currentPoints) => [
   {
     from: "assistant",
-    ...generateAssistantResponse("hallo")
+    ...generateAssistantResponse("hallo", { currentPoints })
+  }
+];
+
+const createQuickTopics = (currentPoints) => [
+  {
+    label: "BeWell",
+    message: {
+      from: "assistant",
+      mood: "careful",
+      title: "BeWell bündelt deine Gesundheitsangebote.",
+      text:
+        "Hier findest du Check-ups, Beratung, Prävention, Bewegung und buchbare Termine. Ich kann dich direkt zur BeWell-Übersicht führen.",
+      actions: [
+        { label: "BeWell öffnen", to: "/bewell" },
+        { label: "Check-up ansehen", to: "/bewell/vorsorge-check" }
+      ],
+      prompts: ["Welche Gesundheitsangebote gibt es?", "Kann ich einen Check-up buchen?"]
+    }
+  },
+  {
+    label: "Punkte",
+    message: {
+      from: "assistant",
+      mood: "route",
+      title: `Du hast aktuell ${currentPoints} Punkte.`,
+      text:
+        "Im Bereich Schulungen & Punkte siehst du Kurse, Genehmigungen, Ligen und Leaderboards. Beim Start einer Schulung werden die hinterlegten Punkte für diese Sitzung deinem Profil gutgeschrieben.",
+      actions: [
+        { label: "Schulungen & Punkte öffnen", to: "/schulungen" },
+        { label: "Punkte im Profil einlösen", to: "/profil" }
+      ],
+      prompts: ["Wie funktioniert das Punktesystem?", "Welche Belohnungen gibt es?"]
+    }
+  },
+  {
+    label: "Rabatte",
+    message: {
+      from: "assistant",
+      mood: "supportive",
+      title: "Ermäßigungen und Rabattaktionen findest du in Säule 3.",
+      text:
+        "Dort kannst du Angebote aus Reisen, Kultur, Fitness, Ernährung, Restaurants, Weiterbildung und regionalen Partnern entdecken.",
+      actions: [
+        { label: "Ermäßigungen öffnen", to: "/ermaessigungen" },
+        { label: "Regionale Angebote ansehen", to: "/ermaessigungen" }
+      ],
+      prompts: ["Welche Rabatte gibt es?", "Gibt es Fitness-Vorteile?"]
+    }
   }
 ];
 
@@ -60,7 +108,7 @@ function AssistantAvatar({ mood = "supportive", size = "md" }) {
 
   return (
     <span
-      className={`${sizes[size]} relative block shrink-0 rounded-full bg-white p-0.5 shadow-sm ring-4 ${style.ring}`}
+      className={`${sizes[size]} relative block shrink-0 rounded-full bg-gradient-to-br from-teal-200 via-sky-200 to-violet-200 p-0.5 shadow-sm ring-4 ${style.ring}`}
     >
       <img
         src={avatarImage}
@@ -157,8 +205,10 @@ function UserMessage({ text }) {
   );
 }
 
-export default function ChatWidget({ open, onOpenChange }) {
-  const [messages, setMessages] = useState(initialMessages);
+export default function ChatWidget({ open, onOpenChange, currentPoints }) {
+  const initialMessages = useMemo(() => createInitialMessages(currentPoints), [currentPoints]);
+  const quickTopics = useMemo(() => createQuickTopics(currentPoints), [currentPoints]);
+  const [messages, setMessages] = useState(() => initialMessages);
   const [input, setInput] = useState("");
   const [typing, setTyping] = useState(false);
   const messageEndRef = useRef(null);
@@ -202,11 +252,21 @@ export default function ChatWidget({ open, onOpenChange }) {
         ...current,
         {
           from: "assistant",
-          ...generateAssistantResponse(cleanText)
+          ...generateAssistantResponse(cleanText, { currentPoints })
         }
       ]);
       setTyping(false);
     }, 420);
+  };
+
+  const openQuickTopic = (topic) => {
+    if (typingTimerRef.current) {
+      window.clearTimeout(typingTimerRef.current);
+    }
+
+    setTyping(false);
+    setMessages((current) => [...current, topic.message]);
+    onOpenChange(true);
   };
 
   const resetChat = () => {
@@ -254,9 +314,16 @@ export default function ChatWidget({ open, onOpenChange }) {
             </div>
 
             <div className="mt-4 grid grid-cols-3 gap-2 text-center text-xs font-semibold text-slate-200">
-              <span className="rounded-lg bg-white/10 px-2 py-2">BeWell</span>
-              <span className="rounded-lg bg-white/10 px-2 py-2">Punkte</span>
-              <span className="rounded-lg bg-white/10 px-2 py-2">Rabatte</span>
+              {quickTopics.map((topic) => (
+                <button
+                  key={topic.label}
+                  type="button"
+                  onClick={() => openQuickTopic(topic)}
+                  className="focus-ring rounded-lg bg-white/10 px-2 py-2 transition hover:bg-white/20 hover:text-white"
+                >
+                  {topic.label}
+                </button>
+              ))}
             </div>
           </header>
 

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, NavLink } from "react-router-dom";
-import { HeartPulse, LogOut, Menu, MessageCircle, Search, UserRound, X } from "lucide-react";
+import { HeartPulse, LogOut, Menu, MessageCircle, Search, X } from "lucide-react";
+import profileImage from "../assets/karin-mueller-profile.jpg";
 
 const navItems = [
   { label: "Dashboard", to: "/" },
@@ -11,11 +12,26 @@ const navItems = [
   { label: "Profil", to: "/profil" }
 ];
 
-export default function Navbar({ authUser, onChatOpen, onLogout }) {
+const profileFrame = "conic-gradient(from 20deg, #92400e, #facc15, #fef3c7, #d97706, #92400e)";
+
+function ProfileNavAvatar() {
+  return (
+    <span className="ml-1 rounded-full p-0.5 shadow-sm" style={{ background: profileFrame }}>
+      <img
+        src={profileImage}
+        alt=""
+        aria-hidden="true"
+        className="h-6 w-6 rounded-full border border-white object-cover object-[50%_35%]"
+      />
+    </span>
+  );
+}
+
+export default function Navbar({ onChatOpen, onLogout }) {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const linkClass = ({ isActive }) =>
-    `rounded-lg px-3 py-2 text-sm font-medium transition ${
+    `inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition ${
       isActive
         ? "bg-health-teal text-white shadow-sm"
         : "text-slate-700 hover:bg-slate-100 hover:text-ink"
@@ -37,7 +53,8 @@ export default function Navbar({ authUser, onChatOpen, onLogout }) {
         <div className="hidden items-center gap-1 xl:flex">
           {navItems.map((item) => (
             <NavLink key={item.to} to={item.to} className={linkClass}>
-              {item.label}
+              <span>{item.label}</span>
+              {item.to === "/profil" ? <ProfileNavAvatar /> : null}
             </NavLink>
           ))}
           <button
@@ -48,10 +65,6 @@ export default function Navbar({ authUser, onChatOpen, onLogout }) {
             <MessageCircle size={17} />
             KI-Assistent
           </button>
-          <div className="ml-2 flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 shadow-sm">
-            <UserRound size={16} className="text-health-teal" />
-            {authUser?.name ?? "Gast"}
-          </div>
           <button
             type="button"
             onClick={onLogout}
@@ -88,7 +101,8 @@ export default function Navbar({ authUser, onChatOpen, onLogout }) {
                 className={linkClass}
                 onClick={() => setMobileOpen(false)}
               >
-                {item.label}
+                <span>{item.label}</span>
+                {item.to === "/profil" ? <ProfileNavAvatar /> : null}
               </NavLink>
             ))}
             <button
@@ -102,11 +116,7 @@ export default function Navbar({ authUser, onChatOpen, onLogout }) {
               <MessageCircle size={17} />
               KI-Assistent öffnen
             </button>
-            <div className="flex items-center justify-between gap-3 rounded-lg border border-slate-200 bg-white px-3 py-3 text-sm font-semibold text-slate-700">
-              <span className="inline-flex items-center gap-2">
-                <UserRound size={17} className="text-health-teal" />
-                Angemeldet als {authUser?.name ?? "Gast"}
-              </span>
+            <div className="flex items-center justify-end gap-3 rounded-lg border border-slate-200 bg-white px-3 py-3 text-sm font-semibold text-slate-700">
               <button
                 type="button"
                 onClick={() => {

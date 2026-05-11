@@ -39,6 +39,21 @@ const hasAny = (message, keywords) => keywords.some((keyword) => matchesKeyword(
 
 const highlight = (label, title, text) => ({ label, title, text });
 
+const replacePointTokens = (value, currentPoints) =>
+  typeof value === "string" ? value.replaceAll("{{currentPoints}}", String(currentPoints)) : value;
+
+const withAssistantContext = (response, currentPoints = pointsProfile.current) => ({
+  ...response,
+  title: replacePointTokens(response.title, currentPoints),
+  text: replacePointTokens(response.text, currentPoints),
+  highlights: response.highlights?.map((item) => ({
+    ...item,
+    label: replacePointTokens(item.label, currentPoints),
+    title: replacePointTokens(item.title, currentPoints),
+    text: replacePointTokens(item.text, currentPoints)
+  }))
+});
+
 const benefitHighlights = (categoryOrSlug) =>
   benefitOffers
     .filter((offer) => offer.category === categoryOrSlug || offer.slug === categoryOrSlug)
@@ -91,7 +106,7 @@ const rules = [
     keywords: ["reise", "reisen", "hotel", "urlaub", "wellness"],
     title: "Ich habe Reisevorteile für dich gefunden.",
     text: "Im Benefit-Bereich findest du vergünstigte Kurzreisen, Gesundheitshotels und Reiseangebote für Mitarbeitende.",
-    actions: [{ label: "Reiseangebote anzeigen", to: "/ermaessigungen/city-relax-reisen" }, baseActions.benefits],
+    actions: [{ label: "Reiseangebote anzeigen", to: "/ermaessigungen/bahn-citytrip" }, baseActions.benefits],
     highlights: benefitHighlights("Reisen"),
     prompts: ["Gibt es regionale Angebote?", "Welche Corporate Benefits gibt es?"]
   },
@@ -100,7 +115,7 @@ const rules = [
     keywords: ["kultur", "musical", "konzert", "museum", "theater", "tickets"],
     title: "Kulturangebote sind im Benefit-Bereich gebündelt.",
     text: "Du findest Musicals, Konzerte, Museen und Kulturabende mit besonderen Konditionen.",
-    actions: [{ label: "Kulturpass öffnen", to: "/ermaessigungen/kulturpass-musicals" }, baseActions.communities],
+    actions: [{ label: "Kulturpass öffnen", to: "/ermaessigungen/eventim-kultur" }, baseActions.communities],
     highlights: benefitHighlights("Kultur"),
     prompts: ["Welche Events stehen an?", "Gibt es Kultur-Communities?"]
   },
@@ -109,7 +124,7 @@ const rules = [
     keywords: ["fitness", "studio", "fitnessstudio", "bewegung", "sport", "ruckentraining", "rueckentraining", "ruecken"],
     title: "Für Fitness gibt es Benefits und Gesundheitsprogramme.",
     text: "Du kannst den FitPlus-Zuschuss nutzen oder direkt passende Programme wie Rückentraining und Fitnessprogramm buchen.",
-    actions: [{ label: "Fitness-Benefit", to: "/ermaessigungen/fitplus-studio" }, { label: "Fitnessprogramme", to: "/bewell" }],
+    actions: [{ label: "Fitness-Benefit", to: "/ermaessigungen/urban-sports-club" }, { label: "Fitnessprogramme", to: "/bewell" }],
     highlights: [...benefitHighlights("Fitness"), ...healthHighlights("Bewegung")].slice(0, 3),
     prompts: ["Wie buche ich Rückentraining?", "Gibt es einen Fitnesszuschuss?"]
   },
@@ -137,7 +152,7 @@ const rules = [
     title: "Für Ernährung gibt es mehrere passende Angebote.",
     text: "Du findest Ernährungsberatung, Healthy Box, Restaurantvorteile und die Food & Nutrition Community.",
     actions: [{ label: "Ernährungsberatung", to: "/bewell/ernaehrungsberatung" }, { label: "Restaurant-Benefit", to: "/ermaessigungen/regional-restaurant-card" }],
-    highlights: [...benefitHighlights("Gastronomie"), ...healthHighlights("Ernährung")].slice(0, 3),
+    highlights: [...benefitHighlights("Restaurants"), ...healthHighlights("Ernährung")].slice(0, 3),
     prompts: ["Gibt es gute Restaurants in der Nähe?", "Welche Ernährungskurse gibt es?"]
   },
   {
@@ -157,7 +172,7 @@ const rules = [
     keywords: ["rabatt", "corporate", "vergünstigung", "verguenstigung", "shopping", "regional", "partner"],
     title: "Corporate und regionale Benefits findest du zentral.",
     text: "Du kannst nach Kategorie filtern, Favoriten speichern und regionale Vorteile besonders schnell öffnen.",
-    actions: [baseActions.benefits, { label: "Regionale Angebote", to: "/ermaessigungen/markt-apotheke-regional" }],
+    actions: [baseActions.benefits, { label: "Regionale Angebote", to: "/ermaessigungen/doctolib-terminservice" }],
     highlights: [...benefitHighlights("Freizeit"), ...benefitHighlights("Regionale Angebote")].slice(0, 3),
     prompts: ["Welche Rabatte gibt es?", "Welche Restaurants sind Partner?"]
   },
@@ -166,7 +181,7 @@ const rules = [
     keywords: ["mobilitat", "mobilitaet", "jobrad", "fahrrad", "ticket", "opnv", "oepnv", "pendeln"],
     title: "Mobilitätsangebote sind im Benefit-Bereich gebündelt.",
     text: "Jobrad, Deutschlandticket-Zuschuss und Pendlerberatung sind als Mobilitätspaket verfügbar.",
-    actions: [{ label: "Mobilität öffnen", to: "/ermaessigungen/jobrad-mobilitaet" }, baseActions.benefits],
+    actions: [{ label: "Mobilität öffnen", to: "/ermaessigungen/jobrad-leasing" }, baseActions.benefits],
     highlights: benefitHighlights("Mobilität"),
     prompts: ["Wie funktioniert Jobrad?", "Gibt es einen Ticketzuschuss?"]
   },
@@ -182,11 +197,11 @@ const rules = [
   {
     mood: "route",
     keywords: ["punkte", "punktestand", "belohnung", "einlösen", "einloesen", "urlaubstag", "bonus", "gutschein"],
-    title: `Du hast aktuell ${pointsProfile.current} Punkte im Mock-Profil.`,
-    text: "Punkte entstehen durch relevante Schulungen. Du kannst sie gegen Belohnungen wie Kantinengutschein, Fitnesszuschuss oder Eventticket einlösen.",
+    title: "Du hast aktuell {{currentPoints}} Punkte im Profil.",
+    text: "Punkte entstehen durch relevante Schulungen. Die persönliche Belohnungsverwaltung liegt gebündelt im Profilbereich.",
     actions: [baseActions.trainings, baseActions.profile],
-    highlights: rewards.slice(0, 3).map((reward) => highlight(`${reward.points} Punkte`, reward.title, "Belohnung einlösbar im Schulungsbereich")),
-    prompts: ["Welche Schulung bringt viele Punkte?", "Was kann ich einlösen?"]
+    highlights: rewards.slice(0, 3).map((reward) => highlight(`${reward.points} Punkte`, reward.title, "Belohnung im Profilbereich")),
+    prompts: ["Welche Schulung bringt viele Punkte?", "Welche Belohnungen gibt es?"]
   },
   {
     mood: "clarify",
@@ -232,7 +247,7 @@ const rules = [
     actions: [baseActions.profile, baseActions.benefits],
     highlights: [
       highlight("Profil", "Persönlicher Überblick", "Events, Benefits, Schulungen und Tandems"),
-      highlight("Punkte", `${pointsProfile.current} Punkte`, pointsProfile.level)
+      highlight("Punkte", "{{currentPoints}} Punkte", pointsProfile.level)
     ],
     prompts: ["Welche Events habe ich gebucht?", "Welche Benefits sind favorisiert?"]
   }
@@ -242,23 +257,24 @@ function isGreetingOnly(message) {
   return greetingKeywords.some((keyword) => message === normalize(keyword));
 }
 
-export function generateAssistantResponse(userMessage) {
+export function generateAssistantResponse(userMessage, context = {}) {
+  const currentPoints = Number.isFinite(context.currentPoints) ? context.currentPoints : pointsProfile.current;
   const rawMessage = userMessage.trim();
   const message = normalize(rawMessage);
 
   if (!message || isGreetingOnly(message)) {
-    return {
+    return withAssistantContext({
       mood: "welcome",
       title: "Hallo, ich bin Ava, dein Benefit-Assistent.",
       text:
         "Ich helfe dir bei BeWell, Schulungen & Punkten, Ermäßigungen sowie Communities mit Tandems, Events und Ausflügen. Wähle einen Vorschlag oder frage frei.",
       actions: [baseActions.benefits, baseActions.health, baseActions.trainings, baseActions.events],
       prompts: assistantSuggestions
-    };
+    }, currentPoints);
   }
 
   if (hasAny(message, medicalComplaintKeywords)) {
-    return {
+    return withAssistantContext({
       mood: "careful",
       title: "Danke, dass du das ansprichst.",
       text:
@@ -266,21 +282,21 @@ export function generateAssistantResponse(userMessage) {
       actions: [baseActions.health, { label: "Mentale Erstberatung", to: "/bewell/mental-health-session" }],
       highlights: healthOffers.slice(0, 3).map((offer) => highlight(offer.category, offer.title, offer.contact)),
       prompts: ["Welche Gesundheitsangebote gibt es?", "Wer ist Ansprechpartner?"]
-    };
+    }, currentPoints);
   }
 
   const matchedRule = rules.find((rule) => hasAny(message, rule.keywords));
 
   if (matchedRule) {
-    return matchedRule;
+    return withAssistantContext(matchedRule, currentPoints);
   }
 
-  return {
+  return withAssistantContext({
     mood: "clarify",
     title: "Ich bin mir noch nicht ganz sicher, was du suchst.",
     text:
       "Meinst du Benefits, Gesundheit, Schulungen, Punkte, Communities, Tandems oder Events? Ich kann dich direkt zum passenden Bereich führen.",
     actions: [baseActions.benefits, baseActions.health, baseActions.trainings, baseActions.tandems],
     prompts: assistantSuggestions
-  };
+  }, currentPoints);
 }

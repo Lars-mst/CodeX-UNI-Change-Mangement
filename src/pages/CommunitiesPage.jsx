@@ -56,18 +56,21 @@ export default function CommunitiesPage() {
       </div>
 
       {activeTab === "Communities" ? (
-        <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+        <div className="grid items-stretch gap-5 md:grid-cols-2 xl:grid-cols-4">
           {communities.map((community) => {
             const isJoined = joined.includes(community.slug);
             return (
-              <HubCard key={community.slug} item={community} meta={`${community.members} Mitglieder`} cta={null}>
-                <div className="grid gap-3">
-                  <p className="rounded-lg bg-slate-50 p-3 text-sm leading-6 text-slate-600">
-                    Nächstes Treffen: <strong>{community.nextMeet}</strong>
-                  </p>
-                  <p className="rounded-lg bg-mist-green p-3 text-sm leading-6 text-teal-900">
-                    {community.announcement}
-                  </p>
+              <HubCard key={community.slug} item={community} meta={`${community.members} Mitglieder`} cta={null} balanced>
+                <div className="flex h-full flex-col justify-end">
+                  <div className="grid gap-3">
+                    <p className="flex min-h-[4.25rem] flex-col justify-center gap-1 rounded-lg bg-slate-50 p-3 text-sm leading-6 text-slate-600">
+                      <span className="whitespace-nowrap">Nächster Termin</span>
+                      <strong className="block whitespace-nowrap text-slate-700">{community.nextMeet}</strong>
+                    </p>
+                    <p className="flex min-h-[4.25rem] items-center rounded-lg bg-mist-green p-3 text-sm leading-6 text-teal-900">
+                      {community.announcement}
+                    </p>
+                  </div>
                   <button
                     type="button"
                     onClick={() =>
@@ -77,7 +80,7 @@ export default function CommunitiesPage() {
                           : [...current, community.slug]
                       )
                     }
-                    className="focus-ring rounded-lg bg-health-teal px-4 py-2.5 text-sm font-bold text-white hover:bg-teal-700"
+                    className="focus-ring mt-3 w-full rounded-lg bg-health-teal px-4 py-2.5 text-sm font-bold text-white hover:bg-teal-700"
                   >
                     {isJoined ? "Beigetreten" : "Community beitreten"}
                   </button>
@@ -109,8 +112,18 @@ export default function CommunitiesPage() {
               </HubCard>
             ))}
           </div>
-          <aside className="rounded-lg border border-slate-200 bg-white p-5 shadow-soft">
+          <aside className="self-start rounded-lg border border-slate-200 bg-white p-5 shadow-soft">
             <h2 className="text-lg font-bold text-ink">Matching-Simulation</h2>
+            <p className="mt-3 text-sm leading-6 text-slate-600">
+              Digitale Tandems verbinden Mitarbeitende mit ähnlichen Interessen, Lernzielen oder Erfahrungsschwerpunkten. Vorschläge können nach Themen, Rolle, Standort und später auch Kalenderdaten entstehen.
+            </p>
+            <div className="mt-4 flex flex-wrap gap-2">
+              {["Karriere", "Digitalisierung", "Gesundheit", "Sprache", "Onboarding", "Führung"].map((topic) => (
+                <span key={topic} className="rounded-full bg-mist-green px-2.5 py-1 text-xs font-bold text-teal-800">
+                  {topic}
+                </span>
+              ))}
+            </div>
             {selectedTandem ? (
               <div className="mt-4">
                 <p className="font-semibold text-ink">{selectedTandem.title}</p>
@@ -137,8 +150,8 @@ export default function CommunitiesPage() {
                 ) : null}
               </div>
             ) : (
-              <p className="mt-3 text-sm leading-6 text-slate-600">
-                Ava kann später Profil, Interessen und Kalenderdaten für echte Matching-Vorschläge nutzen.
+              <p className="mt-4 rounded-lg bg-slate-50 p-3 text-sm leading-6 text-slate-600">
+                Wähle ein Tandem aus, um passende Vorschläge und mögliche Termine zu sehen.
               </p>
             )}
           </aside>
@@ -162,7 +175,7 @@ export default function CommunitiesPage() {
               const isFavorite = activityFavorites.includes(activity.slug);
 
               return (
-                <article key={`${activity.kind}-${activity.slug}`} className="rounded-lg border border-slate-200 bg-white p-5 shadow-soft">
+                <article key={`${activity.kind}-${activity.slug}`} className="flex h-full flex-col rounded-lg border border-slate-200 bg-white p-5 shadow-soft">
                   <div className="flex items-start justify-between gap-4">
                     <span className="grid h-11 w-11 place-items-center rounded-lg bg-mist-green text-health-teal">
                       <Icon size={22} />
@@ -194,26 +207,28 @@ export default function CommunitiesPage() {
                     <p className="flex items-center gap-2"><MapPin size={16} />{activity.place}</p>
                     <p className="flex items-center gap-2"><Ticket size={16} />{activity.seats > 0 ? `${activity.seats} Plätze verfügbar` : "Warteliste aktiv"}</p>
                   </div>
-                  {isBooked ? (
-                    <div className="mt-4 flex items-center gap-3 rounded-lg bg-slate-50 p-3 text-sm font-semibold text-ink">
-                      <QrCode size={24} className="text-health-teal" />
-                      Digitales Ticket simuliert
+                  <div className="mt-auto pt-4">
+                    {isBooked ? (
+                      <div className="mb-4 flex min-h-[3rem] items-center gap-3 rounded-lg bg-slate-50 p-3 text-sm font-semibold text-ink">
+                        <QrCode size={24} className="text-health-teal" />
+                        Digitales Ticket
+                      </div>
+                    ) : null}
+                    <div className="flex flex-col gap-2 sm:flex-row">
+                      <button
+                        type="button"
+                        onClick={() => bookActivity(activity)}
+                        className="focus-ring rounded-lg bg-health-teal px-4 py-2.5 text-sm font-bold text-white hover:bg-teal-700"
+                      >
+                        {activity.seats <= 0 ? "Auf Warteliste" : "Anmelden"}
+                      </button>
+                      <Link
+                        to={activity.detailPath}
+                        className="focus-ring inline-flex items-center justify-center rounded-lg bg-white px-4 py-2.5 text-sm font-bold text-ink ring-1 ring-slate-200 hover:bg-slate-50"
+                      >
+                        Details
+                      </Link>
                     </div>
-                  ) : null}
-                  <div className="mt-5 flex flex-col gap-2 sm:flex-row">
-                    <button
-                      type="button"
-                      onClick={() => bookActivity(activity)}
-                      className="focus-ring rounded-lg bg-health-teal px-4 py-2.5 text-sm font-bold text-white hover:bg-teal-700"
-                    >
-                      {activity.seats <= 0 ? "Auf Warteliste" : "Anmelden"}
-                    </button>
-                    <Link
-                      to={activity.detailPath}
-                      className="focus-ring inline-flex items-center justify-center rounded-lg bg-white px-4 py-2.5 text-sm font-bold text-ink ring-1 ring-slate-200 hover:bg-slate-50"
-                    >
-                      Details
-                    </Link>
                   </div>
                 </article>
               );
