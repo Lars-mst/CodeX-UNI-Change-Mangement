@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, NavLink } from "react-router-dom";
-import { HeartPulse, LogOut, Menu, MessageCircle, Search, X } from "lucide-react";
+import { HeartPulse, LogOut, Menu, MessageCircle, X } from "lucide-react";
 import profileImage from "../assets/karin-mueller-profile.jpg";
 
 const navItems = [
@@ -74,11 +74,6 @@ export default function Navbar({ onChatOpen, onLogout }) {
           >
             <LogOut size={17} />
           </button>
-        </div>
-
-        <div className="hidden items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-500 shadow-sm md:flex xl:hidden">
-          <Search size={16} />
-          <span>Benefits finden</span>
         </div>
 
         <button
